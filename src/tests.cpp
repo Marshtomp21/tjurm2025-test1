@@ -5,7 +5,7 @@ int my_strlen(char *str) {
     /**
      * 统计字符串的长度，太简单了。
      */
-
+    int test = 1;
     // IMPLEMENT YOUR CODE HERE
     return 0;
 }
