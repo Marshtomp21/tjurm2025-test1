@@ -5,9 +5,12 @@ int my_strlen(char *str) {
     /**
      * 统计字符串的长度，太简单了。
      */
-    int test = 1;
-    // IMPLEMENT YOUR CODE HERE
-    return 0;
+    int length = 0;
+    while (*str != '\0') {
+        length++;
+        str++;
+    }
+    return length;
 }
 
 
@@ -18,7 +21,15 @@ void my_strcat(char *str_1, char *str_2) {
      * 注意结束符'\0'的处理。
      */
 
-    // IMPLEMENT YOUR CODE HERE
+    while (*str_1 != '\0') {
+        str_1++;
+    }
+    while (*str_2 != '\0') {
+        *str_1 = *str_2;
+        str_1++;
+        str_2++;
+    }
+    *str_1 = '\0';
 }
 
 
@@ -31,6 +42,19 @@ char* my_strstr(char *s, char *p) {
      */
 
     // IMPLEMENT YOUR CODE HERE
+    char *s_ptr, *p_ptr;
+    while (*s != '\0') {
+        s_ptr = s;
+        p_ptr = p;
+        while (*p_ptr != '\0' && *s_ptr == *p_ptr) {
+            s_ptr++;
+            p_ptr++;
+        }
+        if (*p_ptr == '\0') {
+            return s;
+        }
+        s++;
+    }
     return 0;
 }
 
@@ -95,8 +119,12 @@ void rgb2gray(float *in, float *out, int h, int w) {
      * (2) 内存的访问。
      */
 
-    // IMPLEMENT YOUR CODE HERE
-    // ...
+    for (int i = 0; i < h; i++) {
+        for (int j = 0; j < w; j++) {
+            int index = (i * w + j) * 3;
+            out[i * w + j] = 0.2989 * in[index] + 0.5870 * in[index + 1] + 0.1140 * in[index + 2];
+        }
+    }
 }
 
 // 练习5，实现图像处理算法 resize：缩小或放大图像
@@ -197,8 +225,30 @@ void resize(float *in, float *out, int h, int w, int c, float scale) {
      */
 
     int new_h = h * scale, new_w = w * scale;
-    // IMPLEMENT YOUR CODE HERE
+    for (int i = 0; i < new_h; i++) {
+        for (int j = 0; j < new_w; j++) {
+            float x = j / scale;
+            float y = i / scale;
+            int x1 = static_cast<int>(x);
+            int y1 = static_cast<int>(y);
+            int x2 = x1 + 1 < w ? x1 + 1 : x1;
+            int y2 = y1 + 1 < h ? y1 + 1 : y1;
 
+            float dx = x - x1;
+            float dy = y - y1;
+            
+            for (int k = 0; k < c; k++) {
+                float P1 = in[(y1 * w + x1) * c + k];
+                float P2 = in[(y1 * w + x2) * c + k];
+                float P3 = in[(y2 * w + x1) * c + k];
+                float P4 = in[(y2 * w + x2) * c + k];
+
+                out[(i * new_w + j) * c + k] = 
+                    P1 * (1 - dx) * (1 - dy) + P2 * dx * (1 - dy) +
+                    P3 * (1 - dx) * dy + P4 * dx * dy;
+            }
+        }
+    }
 }
 
 
@@ -220,5 +270,22 @@ void hist_eq(float *in, int h, int w) {
      * (3) 使用数组来实现灰度级 => 灰度级的映射
      */
 
-    // IMPLEMENT YOUR CODE HERE
+    int hist[256] = {0};
+    int total_pixels = h * w;
+    float cdf[256] = {0};
+
+    for (int i = 0; i < total_pixels; i++) {
+        int pixel_value = static_cast<int>(in[i]);
+        hist[pixel_value]++;
+    }
+
+    cdf[0] = hist[0];
+    for (int i = 1; i < 256; i++) {
+        cdf[i] = cdf[i - 1] + hist[i];
+    }
+
+    for (int i = 0; i < total_pixels; i++) {
+        int pixel_value = static_cast<int>(in[i]);
+        in[i] = 255 * (cdf[pixel_value] - cdf[0]) / (total_pixels - cdf[0]);
+    }
 }
